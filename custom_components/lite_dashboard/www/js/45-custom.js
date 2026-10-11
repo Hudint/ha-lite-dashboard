@@ -232,7 +232,7 @@
       update: function () {
         var shown = 0;
         segs.forEach(function (s) {
-          var visible = !s.b.visibility || LD.checkConditions(ctx, s.b.visibility);
+          var visible = !s.b.visibility || LD.checkConditions(ctx, s.b.visibility, s.id);
           s.el.style.display = visible ? '' : 'none';
           if (!visible) return;
           shown++;

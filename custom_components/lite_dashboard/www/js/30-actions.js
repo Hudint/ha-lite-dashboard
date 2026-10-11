@@ -156,8 +156,14 @@
   /* -------------------------------------------------------- conditions
    * Same semantics as the HA frontend's checkConditionsMet(). */
 
-  function stateOf(ctx, cond) {
-    var id = cond.entity;
+  /* Like split-button-card (and harmless elsewhere): accept "entity_id" as well as
+   * "entity", and fall back to the entity of the element the condition belongs to. */
+  function condEntity(cond, fallback) {
+    return cond.entity || cond.entity_id || fallback;
+  }
+
+  function stateOf(ctx, cond, fallback) {
+    var id = condEntity(cond, fallback);
     var st = id ? ctx.hass.state(id) : undefined;
     if (!st) return undefined;
     return cond.attribute ? st.attributes[cond.attribute] : st.state;
@@ -171,7 +177,7 @@
     return v;
   }
 
-  function checkOne(ctx, c) {
+  function checkOne(ctx, c, fallback) {
     var type = c.condition;
     if (!type) {
       /* legacy conditional-card format: {entity, state, state_not} */
@@ -180,7 +186,7 @@
     }
     switch (type) {
       case 'state': {
-        var s = stateOf(ctx, c);
+        var s = stateOf(ctx, c, fallback);
         if (c.state !== undefined) {
           return LD.asArray(c.state).map(function (v) { return String(refValue(ctx, v)); }).indexOf(String(s)) !== -1;
         }
@@ -190,7 +196,7 @@
         return true;
       }
       case 'numeric_state': {
-        var n = Number(stateOf(ctx, c));
+        var n = Number(stateOf(ctx, c, fallback));
         if (isNaN(n)) return false;
         var above = Number(refValue(ctx, c.above));
         var below = Number(refValue(ctx, c.below));
@@ -203,23 +209,24 @@
       case 'location':
         return true;
       case 'and':
-        return !c.conditions || LD.checkConditions(ctx, c.conditions);
+        return !c.conditions || LD.checkConditions(ctx, c.conditions, fallback);
       case 'or':
-        return !c.conditions || c.conditions.some(function (x) { return checkOne(ctx, x); });
+        return !c.conditions || c.conditions.some(function (x) { return checkOne(ctx, x, fallback); });
       case 'not':
-        return !c.conditions || !LD.checkConditions(ctx, c.conditions);
+        return !c.conditions || !LD.checkConditions(ctx, c.conditions, fallback);
     }
     return true;
   }
 
-  LD.checkConditions = function (ctx, conditions) {
-    return LD.asArray(conditions).every(function (c) { return checkOne(ctx, c); });
+  LD.checkConditions = function (ctx, conditions, fallbackEntity) {
+    return LD.asArray(conditions).every(function (c) { return checkOne(ctx, c, fallbackEntity); });
   };
 
   LD.conditionEntities = function (conditions, out) {
     out = out || [];
     LD.asArray(conditions).forEach(function (c) {
       if (c.entity) out.push(c.entity);
+      if (c.entity_id) out.push(c.entity_id);
       ['above', 'below'].forEach(function (k) {
         if (typeof c[k] === 'string' && c[k].indexOf('.') > 0) out.push(c[k]);
       });
