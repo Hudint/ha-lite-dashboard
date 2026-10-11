@@ -1,76 +1,76 @@
-# Lite Dashboard für Home Assistant
+# Lite Dashboard for Home Assistant
 
-Zeigt ein bestehendes Lovelace-Dashboard als **schlanke, eigenständige Seite** an. Gedacht für schwache Wanddisplays (Shelly Wall Display, ältere Tablets), auf denen das normale HA-Frontend träge ist.
+Renders an existing Lovelace dashboard as a **lightweight standalone page**. Built for slow wall panels (Shelly Wall Display, older tablets) where the regular HA frontend feels sluggish.
 
-Du baust dein Dashboard weiter ganz normal im HA-Editor. Die Integration liest dieselbe Konfiguration und stellt sie unter `/lite-dashboard/<dashboard>` bereit. Dort wird sie mit wenig JavaScript, ohne Web-Components und ohne Custom-Card-Ressourcen gerendert. Änderungen am Dashboard erscheinen automatisch, ohne dass du die Seite neu laden musst.
+You keep editing your dashboard in the normal HA editor. The integration reads the same configuration and serves it at `/lite-dashboard/<dashboard>`, rendered with a small amount of JavaScript, no web components and no custom card resources. Changes to the dashboard show up automatically, without reloading the page.
 
-## Warum ist das schneller?
+## Why is it faster?
 
-Das normale Frontend lädt beim Öffnen jedes Dashboards die komplette HA-App: Seitenleiste, Editoren, Hunderte Komponenten und **alle** installierten Custom-Card-Ressourcen, auch solche, die das Dashboard gar nicht nutzt. Die Lite-Seite lädt nur:
+Every time a dashboard is opened, the regular frontend loads the whole HA app: sidebar, editors, hundreds of components and **all** installed custom card resources, including the ones the dashboard doesn't use. The lite page only loads:
 
-- ihr eigenes, kleines Skript (ca. 150 KB, ohne Build-Schritt, ES2017-kompatibel für alte WebViews),
-- die Zustände der Entitäten, die im Dashboard vorkommen (`subscribe_entities` mit Filter),
-- genau die Icons, die gebraucht werden (ein Request, danach lokal gecacht).
+- its own small script (about 150 KB, no build step, ES2017-compatible for old WebViews),
+- the states of the entities that appear in the dashboard (filtered `subscribe_entities`),
+- exactly the icons it needs (one request, cached locally afterwards).
 
-Ein Tap schaltet sofort optisch um und wird dann von HA bestätigt.
+A tap updates the UI immediately and is then confirmed by HA.
 
-### Messung
+### Measurements
 
-Gemessen mit demselben Dashboard, denselben Daten und Benutzer, Chromium mit **6-fach gedrosselter CPU**, Median aus 3 Läufen:
+Same dashboard, same data and user, Chromium with **6x CPU throttling**, median of 3 runs:
 
-| | Original-Frontend | Lite-Seite | Lite eingebettet (Webseite-Dashboard) |
+| | Regular frontend | Lite page | Lite embedded (Webpage dashboard) |
 |---|---|---|---|
-| Laden bis bedienbar | 10,1 s | **1,1 s** | 6,7 s |
-| Tap → sichtbare Reaktion | 116 ms | **34 ms** | 49 ms |
-| Long-Press → Dialog (inkl. 500 ms Haltezeit) | 1224 ms | **514 ms** | 513 ms |
-| Blockierte Rechenzeit beim Laden | 6,7 s | **0,23 s** | 4,0 s |
-| JS-Speicher | 33 MB | **3,5 MB** | 55 MB |
+| Load until usable | 10.1 s | **1.1 s** | 6.7 s |
+| Tap → visible response | 116 ms | **34 ms** | 49 ms |
+| Long press → dialog (incl. 500 ms hold time) | 1224 ms | **514 ms** | 513 ms |
+| Main-thread blocking during load | 6.7 s | **0.23 s** | 4.0 s |
+| JS memory | 33 MB | **3.5 MB** | 55 MB |
 
-Die echten Werte auf einem Gerät hängen von dessen CPU und WebView ab. Das Verhältnis sollte aber ähnlich sein.
+Real numbers on a device depend on its CPU and WebView, but the ratio should be similar.
 
 ## Installation
 
-### HACS (benutzerdefiniertes Repository)
+### HACS (custom repository)
 
-1. HACS → ⋮ → *Benutzerdefinierte Repositories* → URL dieses Repos, Typ **Integration**.
-2. „Lite Dashboard“ installieren und Home Assistant neu starten.
+1. HACS → ⋮ → *Custom repositories* → `https://github.com/Hudint/ha-lite-dashboard`, type **Integration**.
+2. Install "Lite Dashboard" and restart Home Assistant.
 
-### Manuell
+### Manual
 
-Den Ordner `custom_components/lite_dashboard` nach `/config/custom_components/` kopieren und HA neu starten.
+Copy the `custom_components/lite_dashboard` folder to `/config/custom_components/` and restart HA.
 
-## Einrichtung
+## Setup
 
-1. *Einstellungen → Geräte & Dienste → Integration hinzufügen → Lite Dashboard*.
-2. Dashboard auswählen. Für jedes gewünschte Dashboard kannst du einen eigenen Eintrag anlegen.
-3. Die Seite ist danach erreichbar unter `http://<ha-adresse>:8123/lite-dashboard/<url-pfad>`, zum Beispiel `/lite-dashboard/dashboard-displayxl`.
+1. *Settings → Devices & services → Add integration → Lite Dashboard*.
+2. Pick a dashboard. Add one entry per dashboard you want to publish.
+3. The page is then available at `http://<ha-address>:8123/lite-dashboard/<url-path>`, for example `/lite-dashboard/dashboard-displayxl`.
 
-Die Anmeldung läuft über den normalen HA-Login. Ein eingeschränkter Benutzer (z. B. `shelly`) funktioniert.
+Login uses the regular HA login. A restricted user (e.g. a dedicated `wallpanel` user) works fine.
 
-### Auf dem Shelly Wall Display
+### On a Shelly Wall Display
 
-- **Variante A (am schnellsten):** Wenn die Shelly-Firmware oder eine Kiosk-App (z. B. [ShellyElevate](https://github.com/RapierXbox/ShellyElevate)) eine beliebige URL erlaubt, trägst du dort direkt `http://<ha-adresse>:8123/lite-dashboard/<url-pfad>` ein.
-- **Variante B (funktioniert immer):** In HA unter *Einstellungen → Dashboards → Dashboard hinzufügen → Webseite* ein Dashboard mit der URL `/lite-dashboard/<url-pfad>` anlegen und es für den Display-Benutzer als Standard-Dashboard setzen. Die Lite-Seite übernimmt die Anmeldung von HA, ein zweiter Login ist nicht nötig. Beim Start lädt HA einmal sein Frontend im Hintergrund, die Bedienung läuft danach komplett über die Lite-Seite.
+- **Option A (fastest):** If the Shelly firmware or a kiosk app (e.g. [ShellyElevate](https://github.com/RapierXbox/ShellyElevate)) accepts an arbitrary URL, enter `http://<ha-address>:8123/lite-dashboard/<url-path>` there.
+- **Option B (always works):** In HA, go to *Settings → Dashboards → Add dashboard → Webpage*, use the URL `/lite-dashboard/<url-path>` and make it the default dashboard for the panel's user. The lite page reuses HA's login, so no second login is needed. HA loads its frontend once in the background at startup; after that, all interaction goes through the lite page.
 
-URL-Parameter: `?kiosk` blendet die Ansichts-Tabs aus, `?lang=de` erzwingt eine Sprache.
+URL parameters: `?kiosk` hides the view tabs, `?lang=en` forces a language.
 
-## Unterstützte Karten
+## Supported cards
 
-**Ansichten:** `sections` (gleiche Spalten- und Rasterlogik wie HA), `masonry`, `panel`, `sidebar`, Badges, Sichtbarkeitsbedingungen für Abschnitte und Karten.
+**Views:** `sections` (same column and grid logic as HA), `masonry`, `panel`, `sidebar`, badges, visibility conditions for sections and cards.
 
-**HA-Karten:** `tile` (inkl. Features `toggle`, `target-temperature`, `light-brightness`, `cover-open-close`, `cover-position`, `fan-speed`, `climate-hvac-modes`, `climate-preset-modes`), `heading` (mit Badges), `button`, `entities`, `glance`, `entity`/`sensor` (ohne Graph), `thermostat`, `weather-forecast`, `markdown` (mit Templates), `grid`, `vertical-stack`, `horizontal-stack`, `conditional`, `picture`, `picture-entity`, `picture-glance`, `iframe`.
+**HA cards:** `tile` (including the features `toggle`, `target-temperature`, `light-brightness`, `cover-open-close`, `cover-position`, `fan-speed`, `climate-hvac-modes`, `climate-preset-modes`), `heading` (with badges), `button`, `entities`, `glance`, `entity`/`sensor` (without graph), `thermostat`, `weather-forecast`, `markdown` (with templates), `grid`, `vertical-stack`, `horizontal-stack`, `conditional`, `picture`, `picture-entity`, `picture-glance`, `iframe`.
 
-**Custom Cards, nachgebaut (die Original-JS wird nicht geladen):** `actions-card`, `restriction-card` (PIN/Bestätigen/Sperren, gleiche Logik wie das Original), `bignumber-card`, `split-button-card`, `button-card` (Kernfunktionen inkl. `[[[ JS-Templates ]]]`), Mushroom-Entity-/Light-/Climate-/Cover-…-Karten, `mushroom-template-card`, `mushroom-title-card`, `mushroom-chips-card`, `stack-in-card`, `layout-card` (vereinfacht).
+**Custom cards, re-implemented (the original JS is never loaded):** `actions-card`, `restriction-card` (PIN/confirm/block, same logic as the original), `bignumber-card`, `split-button-card`, `button-card` (core features incl. `[[[ JS templates ]]]`), Mushroom entity/light/climate/cover/… cards, `mushroom-template-card`, `mushroom-title-card`, `mushroom-chips-card`, `stack-in-card`, `layout-card` (simplified).
 
-**Aktionen:** `toggle`, `more-info` (eigener, schlanker Dialog für Licht, Klima, Abdeckungen, Schlösser, Skripte, Wetter und generische Entitäten), `perform-action`/`call-service`, `navigate`, `url`, Bestätigungsdialoge, `tap`/`hold`/`double_tap`/`icon_tap`.
+**Actions:** `toggle`, `more-info` (its own compact dialog for lights, climate, covers, locks, scripts, weather and generic entities), `perform-action`/`call-service`, `navigate`, `url`, confirmation dialogs, `tap`/`hold`/`double_tap`/`icon_tap`.
 
-## Grenzen
+## Limitations
 
-- Nicht unterstützt sind Graphen und Verlauf (`history-graph`, `statistics-graph`, Sensor-Graph), Karten (`map`), Kamera-Streams, Energie-Karten, Kalender, Media-Control und Alarm-Keypad. Solche Karten werden als Hinweis angezeigt. Unbekannte Custom Cards mit einer `entity` erscheinen als bedienbare Kachel.
-- `card_mod` wird nicht ausgeführt. Übernommen werden nur einfache CSS-Variablen der Form `ha-card { --x: y; }`.
-- Strategie-Dashboards (automatisch generiert) müssen in HA erst „übernommen“ werden.
-- Der Detaildialog ist bewusst kompakt und kein vollständiger Ersatz für den HA-Dialog.
+- Not supported: graphs and history (`history-graph`, `statistics-graph`, sensor graph), `map`, camera streams, energy cards, calendar, media control and the alarm keypad. These cards show a placeholder notice. Unknown custom cards that have an `entity` are shown as a usable tile.
+- `card_mod` is not executed. Only simple CSS variables of the form `ha-card { --x: y; }` are applied.
+- Strategy (auto-generated) dashboards must first be "taken control of" in HA.
+- The more-info dialog is intentionally compact and is not a full replacement for HA's dialog.
 
-## Entwicklung
+## Development
 
-Kein Build-Schritt: Die Dateien in `custom_components/lite_dashboard/www/js/` werden in Namensreihenfolge geladen. Die Cache-Version ergibt sich aus einem Hash der Dateien beim HA-Start.
+No build step: the files in `custom_components/lite_dashboard/www/js/` are loaded in name order. The cache version is a hash of the files, computed when HA starts.
