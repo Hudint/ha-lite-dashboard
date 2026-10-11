@@ -1,0 +1,18 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Lite Dashboard",
+        "description": "Wähle ein Dashboard. Es wird als schlanke Seite für langsame Wanddisplays bereitgestellt.",
+        "data": { "dashboard": "Dashboard" }
+      }
+    },
+    "abort": {
+      "already_configured": "Dieses Dashboard ist bereits als Lite-Seite eingerichtet.",
+      "no_dashboards": "Alle Dashboards sind bereits als Lite-Seite eingerichtet."
+    },
+    "create_entry": {
+      "default": "Fertig. Die Lite-Seite ist erreichbar unter http://<deine-ha-adresse>{url}"
+    }
+  }
+}

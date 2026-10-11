@@ -1,0 +1,18 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Lite Dashboard",
+        "description": "Choose a dashboard. It will be served as a lightweight page for slow wall panels.",
+        "data": { "dashboard": "Dashboard" }
+      }
+    },
+    "abort": {
+      "already_configured": "This dashboard is already published as a lite page.",
+      "no_dashboards": "All dashboards are already published as lite pages."
+    },
+    "create_entry": {
+      "default": "Done. Open the lite page at http://<your-ha-address>{url}"
+    }
+  }
+}
