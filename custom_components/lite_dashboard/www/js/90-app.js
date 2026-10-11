@@ -45,6 +45,7 @@
     while ((m = re.exec(text))) {
       if (ENTITY_DOMAINS[m[1]]) found[m[0]] = 1;
     }
+    if (text.indexOf('weather-forecast') !== -1) found['sun.sun'] = 1; /* day/night weather icons */
     return Object.keys(found);
   }
   LD.extractEntityIds = extractEntityIds;
@@ -305,6 +306,13 @@
       state.ctx.onScreen();
     }, 250);
   });
+
+  if (window.matchMedia) {
+    var mq = window.matchMedia('(prefers-color-scheme: dark)');
+    var onScheme = function () { if (state.lovelace) render(); };
+    if (mq.addEventListener) mq.addEventListener('change', onScheme);
+    else if (mq.addListener) mq.addListener(onScheme);
+  }
 
   document.addEventListener('visibilitychange', function () {
     if (document.visibilityState === 'visible' && state.conn) state.conn.reconnectNow();

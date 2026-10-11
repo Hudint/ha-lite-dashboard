@@ -158,20 +158,28 @@
 
   /* ---------------------------------------------------------------- theme */
 
+  /* Like HA: dark mode follows the device unless the user picked light/dark in
+   * their HA profile on this browser (localStorage "selectedTheme"). Theme
+   * variables are applied on top of the light/dark base palette. */
+  LD.isDark = function () {
+    var sel = LD.storage.get('selectedTheme', null);
+    if (sel && typeof sel.dark === 'boolean') return sel.dark;
+    return !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  };
+
   LD.applyTheme = function (themes, name) {
     var root = document.documentElement;
     (LD._themeKeys || []).forEach(function (k) { root.style.removeProperty('--' + k); });
     LD._themeKeys = [];
     var all = (themes && themes.themes) || {};
-    var themeName = name && all[name] ? name : themes && themes.default_theme;
+    var sel = LD.storage.get('selectedTheme', null);
+    var themeName = name && all[name] ? name : sel && sel.theme && all[sel.theme] ? sel.theme : themes && themes.default_theme;
     var theme = themeName && all[themeName];
-    var dark = false;
+    var dark = LD.isDark();
     if (theme) {
       var vars = Object.assign({}, theme);
       if (theme.modes) {
-        var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-        var mode = theme.modes.dark && (prefersDark || !theme.modes.light) ? 'dark' : 'light';
-        dark = mode === 'dark';
+        var mode = dark ? (theme.modes.dark ? 'dark' : 'light') : theme.modes.light ? 'light' : 'dark';
         delete vars.modes;
         Object.assign(vars, theme.modes[mode] || {});
       }
@@ -181,21 +189,8 @@
         root.style.setProperty('--' + k, String(vars[k]));
         LD._themeKeys.push(k);
       });
-      if (!theme.modes) {
-        var bg = vars['primary-background-color'];
-        dark = bg ? isDarkColor(bg) : false;
-      }
-    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      dark = true;
     }
     root.classList.toggle('ld-dark', dark);
   };
 
-  function isDarkColor(c) {
-    var m = /^#([0-9a-f]{6})$/i.exec(String(c).trim());
-    if (!m) return false;
-    var n = parseInt(m[1], 16);
-    var l = 0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255);
-    return l < 128;
-  }
 })();

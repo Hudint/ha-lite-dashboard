@@ -18,6 +18,10 @@
   --disabled-color: #bdbdbd;
   --divider-color: rgba(0, 0, 0, 0.12);
   --state-icon-color: #44739e;
+  --state-inactive-color: #9e9e9e;
+  --clear-background-color: #ffffff;
+  --state-climate-heat-color: #ff6f22;
+  --state-climate-cool-color: #2196f3;
   --ld-row-height: var(--ha-section-grid-row-height, 56px);
 }
 :root.ld-dark {
@@ -26,9 +30,10 @@
   --card-background-color: #1c1c1c;
   --primary-text-color: #e1e1e1;
   --secondary-text-color: #9b9b9b;
-  --disabled-color: #6f6f6f;
+  --disabled-color: #464646;
   --divider-color: rgba(225, 225, 225, 0.12);
-  --state-icon-color: #9e9e9e;
+  --state-icon-color: #d1d1d1;
+  --clear-background-color: #111111;
 }
 
 html, body { margin: 0; padding: 0; min-height: 100%; }
@@ -159,7 +164,7 @@ button { font: inherit; color: inherit; }
 .ld-tile-main { display: flex; align-items: center; gap: 10px; padding: 10px; flex: 1; min-height: 0; }
 .ld-tile-icon {
   width: 36px; height: 36px; border-radius: var(--tile-icon-border-radius, 18px);
-  color: var(--state-inactive-color, var(--state-icon-color));
+  color: var(--state-inactive-color);
 }
 .ld-tile-icon::before {
   content: ""; position: absolute; left: 0; top: 0; right: 0; bottom: 0;
@@ -180,10 +185,10 @@ button { font: inherit; color: inherit; }
 /* ---------- features ---------- */
 .ld-feature { min-height: 40px; display: flex; align-items: center; gap: 8px; }
 .ld-switch { position: relative; height: 40px; width: 100%; border-radius: 12px; padding: 4px; display: flex; }
-.ld-switch-bg { position: absolute; left: 0; top: 0; right: 0; bottom: 0; border-radius: inherit; background: var(--disabled-color); opacity: 0.2; }
+.ld-switch-bg { position: absolute; left: 0; top: 0; right: 0; bottom: 0; border-radius: inherit; background: var(--state-inactive-color); opacity: 0.2; }
 .ld-switch.on .ld-switch-bg { background: var(--ld-feature-color, var(--primary-color)); }
 .ld-switch-knob {
-  position: relative; width: 50%; height: 100%; border-radius: 8px; background: var(--disabled-color);
+  position: relative; width: 50%; height: 100%; border-radius: 8px; background: var(--state-inactive-color);
   color: #fff; display: flex; align-items: center; justify-content: center;
   transition: transform 0.15s ease-out; will-change: transform;
 }
@@ -294,11 +299,17 @@ button { font: inherit; color: inherit; }
 .ld-thermostat:not(.ld-rows-small) .ld-thermo-body { max-width: 300px; }
 .ld-child > .ld-thermostat .ld-thermo-body, .ld-masonry .ld-thermo-body { height: 240px; flex: none; }
 .ld-child > .ld-thermostat .ld-thermo-int, .ld-masonry .ld-thermo-int { font-size: 56px; }
-.ld-ring-track { fill: none; stroke: var(--disabled-color); stroke-opacity: 0.35; stroke-width: 24; stroke-linecap: round; }
-.ld-ring-active-bg { fill: none; stroke: #fff; stroke-opacity: 0.9; stroke-width: 24; stroke-linecap: round; }
-.ld-ring-active { fill: none; stroke: var(--ld-ring-color); stroke-opacity: 0.45; stroke-width: 24; stroke-linecap: round; }
+.ld-ring-track { fill: none; stroke: var(--disabled-color); opacity: 0.3; stroke-width: 24; stroke-linecap: round; }
+.ld-ring-clear { fill: none; stroke: var(--clear-background-color); stroke-width: 24; stroke-linecap: round; }
+.ld-ring-colored { fill: none; stroke: var(--ld-ring-color); opacity: 0.5; stroke-width: 24; stroke-linecap: round; }
+.ld-ring-active { fill: none; stroke: var(--ld-ring-color); stroke-width: 24; stroke-linecap: round; }
+.ld-ring-current { fill: var(--primary-text-color); opacity: 0.5; }
+.ld-ring-handle-border { fill: var(--ld-ring-color); }
 .ld-ring-handle { fill: #fff; }
-.ld-ring-current { fill: var(--ld-ring-color); }
+.ld-thermo-body.ld-glow::after {
+  content: ""; position: absolute; left: -10%; top: -10%; right: -10%; bottom: -10%; pointer-events: none; opacity: 0.15;
+  background: radial-gradient(50% 50% at 50% 50%, var(--ld-action-color, transparent) 0%, transparent 100%);
+}
 .ld-thermo-center { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; align-items: center; pointer-events: none; }
 .ld-thermo-label { font-size: 13px; font-weight: 500; line-height: 18px; }
 .ld-thermo-big { display: flex; align-items: flex-start; line-height: 1; }
@@ -314,7 +325,14 @@ button { font: inherit; color: inherit; }
 /* ---------- weather ---------- */
 .ld-weather { padding: 16px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; height: 100%; }
 .ld-weather-current { display: flex; align-items: center; gap: 12px; min-width: 0; }
-.ld-weather-icon { width: 56px; height: 56px; }
+.ld-weather-iconbox { flex: none; }
+.ld-weather-icon { width: 56px; height: 56px; display: block; }
+.ld-wx-sun { fill: var(--weather-icon-sun-color, #fdd93c); }
+.ld-wx-moon { fill: var(--weather-icon-moon-color, #fcf497); }
+.ld-wx-rain { fill: var(--weather-icon-rain-color, #30b3ff); }
+.ld-wx-cloud-back { fill: var(--weather-icon-cloud-back-color, #d4d4d4); }
+.ld-wx-cloud-front { fill: var(--weather-icon-cloud-front-color, #f9f9f9); }
+.ld-wx-snow { fill: var(--weather-icon-snow-color, #f9f9f9); stroke: var(--weather-icon-snow-stroke-color, #d4d4d4); stroke-width: 1px; paint-order: stroke; }
 .ld-weather-left { flex: 1; min-width: 0; }
 .ld-weather-cond { font-size: 22px; line-height: 28px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ld-weather-name, .ld-weather-range { font-size: 13px; color: var(--secondary-text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -323,7 +341,7 @@ button { font: inherit; color: inherit; }
 .ld-weather-forecast { display: flex; overflow: hidden; }
 .ld-weather-col { flex: 0 0 54px; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 13px; }
 .ld-weather-when { color: var(--secondary-text-color); font-size: 12px; }
-.ld-weather-col-icon { width: 32px; height: 32px; }
+.ld-weather-col-icon { width: 32px; height: 32px; display: block; }
 .ld-weather-lo { color: var(--secondary-text-color); }
 
 /* ---------- custom cards ---------- */
