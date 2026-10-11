@@ -205,7 +205,10 @@
       var seg = h('div', 'ld-split-seg');
       var bg = h('div', 'ld-split-bg');
       var iconBox = LD.iconBox('ld-split-icon');
-      if (b.icon_height) iconBox.style.height = b.icon_height;
+      if (b.icon_height) {
+        iconBox.style.height = b.icon_height;
+        iconBox.classList.add('ld-has-height');
+      }
       var name = h('div', 'ld-split-name');
       var state = h('div', 'ld-split-state');
       seg.appendChild(bg);

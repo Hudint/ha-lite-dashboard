@@ -360,14 +360,28 @@ button { font: inherit; color: inherit; }
 .ld-bignumber-value { line-height: 1.1; font-weight: 400; }
 .ld-bignumber-unit { font-size: 40%; margin-left: 4px; }
 .ld-split { display: grid; height: 100%; }
-.ld-split-seg { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 8px 4px; min-width: 0; }
+.ld-split-seg {
+  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 4% 4px; min-width: 0; overflow: hidden;
+  font-size: var(--ha-font-size-l, 16.8px); line-height: var(--ha-line-height-condensed, 1.2);
+}
 .ld-split-seg + .ld-split-seg { border-left: 1px solid var(--sbc-divider-color, var(--divider-color)); }
 .ld-split-bg { position: absolute; left: 0; top: 0; right: 0; bottom: 0; opacity: 0; }
-.ld-split-icon { position: relative; color: var(--state-icon-color); max-height: 60%; }
-.ld-split-icon .ld-icon { width: 24px; height: 24px; }
-.ld-split-icon .ld-icon-img { height: 100%; width: auto; }
-.ld-split-name { position: relative; font-size: var(--sbc-name-font-size, 14px); font-weight: var(--sbc-name-font-weight, 500); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-.ld-split-state { position: relative; font-size: var(--sbc-state-font-size, 12px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.ld-split-icon { position: relative; color: var(--state-icon-color); width: 40%; max-height: 80%; min-height: 0; }
+.ld-split-icon .ld-icon { width: 100%; height: auto; }
+.ld-split-icon .ld-icon-img { height: 100%; width: auto; max-width: 90%; margin: 0 auto; }
+.ld-split-icon.ld-has-height { width: auto; }
+/* with icon_height the original renders mdi icons at their default size (pictures use the height) */
+.ld-split-icon.ld-has-height .ld-icon { width: 24px; height: 24px; }
+/* same text rules as split-button-card: name up to 2 lines with hyphenation, state 1 line */
+.ld-split-name, .ld-split-state {
+  position: relative; flex-shrink: 0; max-width: 100%;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
+  -webkit-hyphens: auto; hyphens: auto; overflow-wrap: break-word; word-wrap: break-word;
+}
+.ld-split-icon + .ld-split-name, .ld-split-icon + .ld-split-state { margin-top: 8px; }
+.ld-split-name { font-size: var(--sbc-name-font-size, inherit); font-weight: var(--sbc-name-font-weight, inherit); }
+.ld-split-state { -webkit-line-clamp: 1; font-size: var(--sbc-state-font-size, 0.9rem); font-weight: var(--sbc-state-font-weight, inherit); color: var(--secondary-text-color); }
 .ld-bcard { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 4% 8px; min-height: 80px; text-align: center; height: 100%; }
 .ld-bcard-icon { width: 40%; max-width: 64px; color: var(--state-icon-color); }
 .ld-bcard-icon .ld-icon { width: 100%; height: auto; }
