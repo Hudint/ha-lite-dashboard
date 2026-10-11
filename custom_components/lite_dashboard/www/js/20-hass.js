@@ -162,13 +162,28 @@
       else if (attr === 'brightness') return Math.round((v / 255) * 100) + ' %';
       return LD.formatNumber(v) + unit;
     }
-    var tr = this.tr('component.' + d + '.entity_component._.state_attributes.' + attr + '.state.' + v);
-    return tr || String(v);
+    return this.attrTr(st, attr, 'state.' + v) || String(v);
+  };
+
+  /* Attribute translations, in HA's order: the integration's own entity
+   * translation (translation_key), then the domain's device class, then the
+   * domain default. E.g. Shelly's preset "frost_protection" -> "Frostschutz". */
+  Hass.prototype.attrTr = function (st, attr, suffix) {
+    var d = LD.domain(st.entity_id);
+    var reg = this.registry[st.entity_id];
+    var keys = [];
+    if (reg && reg.pl && reg.tk) keys.push('component.' + reg.pl + '.entity.' + d + '.' + reg.tk + '.state_attributes.' + attr + '.' + suffix);
+    if (st.attributes.device_class) keys.push('component.' + d + '.entity_component.' + st.attributes.device_class + '.state_attributes.' + attr + '.' + suffix);
+    keys.push('component.' + d + '.entity_component._.state_attributes.' + attr + '.' + suffix);
+    for (var i = 0; i < keys.length; i++) {
+      var t = this.tr(keys[i]);
+      if (t) return t;
+    }
+    return undefined;
   };
 
   Hass.prototype.attrName = function (st, attr) {
-    var d = LD.domain(st.entity_id);
-    return this.tr('component.' + d + '.entity_component._.state_attributes.' + attr + '.name') || attr.replace(/_/g, ' ');
+    return this.attrTr(st, attr, 'name') || attr.replace(/_/g, ' ');
   };
 
   /* Icon resolution order matches HA: entity icon attribute, registry icon,
