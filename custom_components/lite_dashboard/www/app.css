@@ -23,6 +23,65 @@
   --state-climate-heat-color: #ff6f22;
   --state-climate-cool-color: #2196f3;
   --ld-row-height: var(--ha-section-grid-row-height, 56px);
+  /* HA's named colors and state colors (same defaults as the HA frontend) */
+  --red-color: #f44336; --pink-color: #e91e63; --purple-color: #926bc7; --deep-purple-color: #6e41ab;
+  --indigo-color: #3f51b5; --blue-color: #2196f3; --light-blue-color: #03a9f4; --cyan-color: #00bcd4;
+  --teal-color: #009688; --green-color: #4caf50; --light-green-color: #8bc34a; --lime-color: #cddc39;
+  --yellow-color: #ffeb3b; --amber-color: #ffc107; --orange-color: #ff9800; --deep-orange-color: #ff6f22;
+  --brown-color: #795548; --light-grey-color: #bdbdbd; --grey-color: #9e9e9e; --dark-grey-color: #606060;
+  --blue-grey-color: #607d8b; --black-color: #000; --white-color: #fff;
+  --disabled-text-color: #bdbdbd;
+  --state-unavailable-color: var(--state-icon-unavailable-color, var(--disabled-text-color));
+  --state-active-color: var(--amber-color);
+  --state-alarm_control_panel-armed_away-color: var(--green-color);
+  --state-alarm_control_panel-armed_custom_bypass-color: var(--green-color);
+  --state-alarm_control_panel-armed_home-color: var(--green-color);
+  --state-alarm_control_panel-armed_night-color: var(--green-color);
+  --state-alarm_control_panel-armed_vacation-color: var(--green-color);
+  --state-alarm_control_panel-arming-color: var(--orange-color);
+  --state-alarm_control_panel-disarming-color: var(--orange-color);
+  --state-alarm_control_panel-pending-color: var(--orange-color);
+  --state-alarm_control_panel-triggered-color: var(--red-color);
+  --state-alert-off-color: var(--orange-color);
+  --state-alert-on-color: var(--red-color);
+  --state-binary_sensor-active-color: var(--amber-color);
+  --state-climate-auto-color: var(--green-color);
+  --state-climate-dry-color: var(--orange-color);
+  --state-climate-fan_only-color: var(--cyan-color);
+  --state-climate-heat-cool-color: var(--amber-color);
+  --state-cover-active-color: var(--purple-color);
+  --state-device_tracker-active-color: var(--blue-color);
+  --state-device_tracker-home-color: var(--green-color);
+  --state-fan-active-color: var(--cyan-color);
+  --state-humidifier-on-color: var(--blue-color);
+  --state-lawn_mower-active-color: var(--teal-color);
+  --state-lawn_mower-error-color: var(--red-color);
+  --state-light-active-color: var(--amber-color);
+  --state-lock-jammed-color: var(--red-color);
+  --state-lock-locked-color: var(--green-color);
+  --state-lock-locking-color: var(--orange-color);
+  --state-lock-open-color: var(--red-color);
+  --state-lock-opening-color: var(--orange-color);
+  --state-lock-unlocked-color: var(--red-color);
+  --state-lock-unlocking-color: var(--orange-color);
+  --state-media_player-active-color: var(--light-blue-color);
+  --state-person-active-color: var(--blue-color);
+  --state-person-home-color: var(--green-color);
+  --state-plant-active-color: var(--red-color);
+  --state-siren-active-color: var(--red-color);
+  --state-sun-above_horizon-color: var(--amber-color);
+  --state-sun-below_horizon-color: var(--indigo-color);
+  --state-switch-active-color: var(--amber-color);
+  --state-update-active-color: var(--orange-color);
+  --state-vacuum-active-color: var(--teal-color);
+  --state-vacuum-error-color: var(--red-color);
+  --state-valve-active-color: var(--blue-color);
+  --state-water_heater-eco-color: var(--green-color);
+  --state-water_heater-electric-color: var(--orange-color);
+  --state-water_heater-gas-color: var(--orange-color);
+  --state-water_heater-heat_pump-color: var(--orange-color);
+  --state-water_heater-high_demand-color: var(--deep-orange-color);
+  --state-water_heater-performance-color: var(--deep-orange-color);
 }
 :root.ld-dark {
   --primary-background-color: #111111;
@@ -34,6 +93,7 @@
   --divider-color: rgba(225, 225, 225, 0.12);
   --state-icon-color: #d1d1d1;
   --clear-background-color: #111111;
+  --disabled-text-color: #6f6f6f;
 }
 
 html, body { margin: 0; padding: 0; min-height: 100%; }
@@ -55,6 +115,7 @@ body {
   box-sizing: border-box;
 }
 button { font: inherit; color: inherit; }
+html.ld-no-scroll, html.ld-no-scroll body { overflow: hidden; height: 100%; overscroll-behavior: none; }
 
 /* ---------- boot / status ---------- */
 .ld-boot { display: flex; align-items: center; justify-content: center; height: 100vh; }
@@ -291,11 +352,15 @@ button { font: inherit; color: inherit; }
 .ld-unsupported-type { font-size: 12px; }
 
 /* ---------- thermostat ---------- */
-.ld-thermostat { display: flex; flex-direction: column; align-items: center; padding: 10px 8px 8px; height: 100%; min-height: 220px; }
+.ld-thermostat { display: flex; flex-direction: column; align-items: center; height: 100%; min-height: 220px; }
 .ld-fit-rows .ld-thermostat { min-height: 0; }
-.ld-thermo-title { font-size: 16px; line-height: 24px; text-align: center; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 8px; flex: none; }
-.ld-thermo-body { position: relative; flex: 1; width: 100%; min-height: 0; display: flex; align-items: center; justify-content: center; }
-.ld-thermo-ring { height: 100%; max-width: 100%; display: block; overflow: visible; }
+.ld-thermo-title { font-size: 16px; line-height: 32px; text-align: center; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 8px 30px; flex: none; }
+/* same geometry as hui-thermostat-card: ring = card width - 18px, 10px below the title,
+   numbers start 20px below the ring top; in short cards the ring is cut off at the bottom */
+.ld-thermo-body { position: relative; flex: 1; width: calc(100% - 18px); min-height: 0; margin-top: 10px; display: flex; align-items: flex-start; justify-content: center; }
+.ld-rows-small .ld-thermo-body { flex: none; }
+.ld-thermo-ring { width: 100%; max-height: 100%; display: block; overflow: visible; }
+.ld-rows-small .ld-thermo-ring { max-height: none; }
 .ld-thermostat:not(.ld-rows-small) .ld-thermo-body { max-width: 300px; }
 .ld-child > .ld-thermostat .ld-thermo-body, .ld-masonry .ld-thermo-body { height: 240px; flex: none; }
 .ld-child > .ld-thermostat .ld-thermo-int, .ld-masonry .ld-thermo-int { font-size: 56px; }
@@ -310,23 +375,24 @@ button { font: inherit; color: inherit; }
   content: ""; position: absolute; left: -10%; top: -10%; right: -10%; bottom: -10%; pointer-events: none; opacity: 0.15;
   background: radial-gradient(50% 50% at 50% 50%, var(--ld-action-color, transparent) 0%, transparent 100%);
 }
-.ld-thermo-center { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; align-items: center; pointer-events: none; }
-.ld-thermo-label { font-size: 13px; font-weight: 500; line-height: 18px; }
-.ld-thermo-big { display: flex; align-items: flex-start; line-height: 1; }
-.ld-thermo-int { font-size: 34px; font-weight: 400; }
+.ld-thermo-center { position: absolute; left: 0; right: 0; top: 20px; display: flex; flex-direction: column; align-items: center; pointer-events: none; }
+.ld-thermostat:not(.ld-rows-small) .ld-thermo-center { top: 50%; transform: translateY(-50%); }
+.ld-thermo-label { font-size: 14px; font-weight: 500; line-height: 22.4px; }
+.ld-thermo-big { display: flex; align-items: flex-start; line-height: 1.12; margin-top: 3px; }
+.ld-thermo-int { font-size: 32px; font-weight: 400; }
 .ld-thermo-side { display: flex; flex-direction: column; margin-left: 1px; }
-.ld-thermo-unit { font-size: 11px; line-height: 13px; }
-.ld-thermo-dec { font-size: 15px; line-height: 17px; }
-.ld-thermo-sub { display: flex; align-items: center; gap: 3px; font-size: 12px; font-weight: 500; margin-top: 4px; }
-.ld-thermo-sub .ld-icon { width: 14px; height: 14px; }
+.ld-thermo-unit { font-size: 10.56px; line-height: 12.7px; margin-top: 4px; }
+.ld-thermo-dec { font-size: 13.44px; line-height: 17.9px; }
+.ld-thermo-sub { display: flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 500; line-height: 22.4px; margin-top: 1px; }
+.ld-thermo-sub .ld-icon { width: 16px; height: 16px; }
 .ld-thermo-stepper { width: 100%; max-width: 260px; padding: 8px 4px 0; flex: none; }
 .ld-rows-small .ld-thermo-stepper { display: none; }
 
 /* ---------- weather ---------- */
-.ld-weather { padding: 16px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; height: 100%; }
-.ld-weather-current { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.ld-weather { padding: 22px 0 0; display: flex; flex-direction: column; justify-content: flex-start; height: 100%; }
+.ld-weather-current { display: flex; align-items: center; gap: 16px; min-width: 0; padding: 0 16px; }
 .ld-weather-iconbox { flex: none; }
-.ld-weather-icon { width: 56px; height: 56px; display: block; }
+.ld-weather-icon { width: 48px; height: 48px; display: block; }
 .ld-wx-sun { fill: var(--weather-icon-sun-color, #fdd93c); }
 .ld-wx-moon { fill: var(--weather-icon-moon-color, #fcf497); }
 .ld-wx-rain { fill: var(--weather-icon-rain-color, #30b3ff); }
@@ -334,14 +400,14 @@ button { font: inherit; color: inherit; }
 .ld-wx-cloud-front { fill: var(--weather-icon-cloud-front-color, #f9f9f9); }
 .ld-wx-snow { fill: var(--weather-icon-snow-color, #f9f9f9); stroke: var(--weather-icon-snow-stroke-color, #d4d4d4); stroke-width: 1px; paint-order: stroke; }
 .ld-weather-left { flex: 1; min-width: 0; }
-.ld-weather-cond { font-size: 22px; line-height: 28px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.ld-weather-name, .ld-weather-range { font-size: 13px; color: var(--secondary-text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ld-weather-cond { font-size: 24px; line-height: 28.8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ld-weather-name, .ld-weather-range { font-size: 14px; line-height: 16.8px; color: var(--secondary-text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ld-weather-right { text-align: right; flex: none; }
-.ld-weather-temp { font-size: 22px; line-height: 28px; }
-.ld-weather-forecast { display: flex; overflow: hidden; }
-.ld-weather-col { flex: 0 0 54px; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 13px; }
-.ld-weather-when { color: var(--secondary-text-color); font-size: 12px; }
-.ld-weather-col-icon { width: 32px; height: 32px; display: block; }
+.ld-weather-temp { font-size: 24px; line-height: 28.8px; }
+.ld-weather-forecast { display: flex; overflow: hidden; padding: 12px 16px 0; }
+.ld-weather-col { flex: 0 0 64px; padding: 0 8px; display: flex; flex-direction: column; align-items: center; font-size: 16px; line-height: 16px; }
+.ld-weather-when { color: var(--secondary-text-color); font-size: 12px; line-height: 12px; }
+.ld-weather-col-icon { width: 32px; height: 32px; display: block; margin: 8px 0; }
 .ld-weather-lo { color: var(--secondary-text-color); }
 
 /* ---------- custom cards ---------- */
@@ -359,29 +425,87 @@ button { font: inherit; color: inherit; }
 .ld-bignumber-title { font-size: 16px; color: var(--secondary-text-color); margin-bottom: 4px; }
 .ld-bignumber-value { line-height: 1.1; font-weight: 400; }
 .ld-bignumber-unit { font-size: 40%; margin-left: 4px; }
-.ld-split { display: grid; height: 100%; }
-.ld-split-seg {
-  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;
-  text-align: center; padding: 4% 4px; min-width: 0; overflow: hidden;
-  font-size: var(--ha-font-size-l, 16.8px); line-height: var(--ha-line-height-condensed, 1.2);
+/* ---------- split-button-card (port of Hudint/split-button-card v0.6.0 styles) ---------- */
+.ld-sbc { height: 100%; overflow: hidden; }
+.ld-sbc-grid { display: grid; grid-auto-rows: 1fr; height: 100%; }
+/* grow the grid by one divider width so the outermost dividers fall outside the card */
+.ld-sbc-divider-border .ld-sbc-grid, .ld-sbc-divider-line .ld-sbc-grid {
+  height: calc(100% + var(--sbc-divider-width));
+  margin-right: calc(-1 * var(--sbc-divider-width));
+  margin-bottom: calc(-1 * var(--sbc-divider-width));
 }
-.ld-split-seg + .ld-split-seg { border-left: 1px solid var(--sbc-divider-color, var(--divider-color)); }
-.ld-split-bg { position: absolute; left: 0; top: 0; right: 0; bottom: 0; opacity: 0; }
-.ld-split-icon { position: relative; color: var(--state-icon-color); width: 40%; max-height: 80%; min-height: 0; }
-.ld-split-icon .ld-icon { width: 100%; height: auto; }
-.ld-split-icon .ld-icon-img { height: 100%; width: auto; max-width: 90%; margin: 0 auto; }
-.ld-split-icon.ld-has-height { width: auto; }
-/* with icon_height the original renders mdi icons at their default size (pictures use the height) */
-.ld-split-icon.ld-has-height .ld-icon { width: 24px; height: 24px; }
-/* same text rules as split-button-card: name up to 2 lines with hyphenation, state 1 line */
-.ld-split-name, .ld-split-state {
-  position: relative; flex-shrink: 0; max-width: 100%;
+.ld-sbc-divider-gap .ld-sbc-grid { gap: var(--sbc-gap); padding: var(--sbc-gap); }
+.ld-sbc-item {
+  /* resolved here, before the segment repoints --state-inactive-color */
+  --sbc-toggle-off-color: var(--state-inactive-color, var(--disabled-color, #bdbdbd));
+  position: relative; min-width: 0; min-height: 0;
+}
+.ld-sbc-seg {
+  --state-inactive-color: var(--state-icon-color);
+  --state-color: var(--state-icon-color);
+  position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 4% 4px; height: 100%;
+  font-size: var(--ha-font-size-l, 16px); line-height: var(--ha-line-height-condensed, 1.2);
+  border-radius: var(--sbc-segment-radius, 0); border: var(--sbc-segment-border, none);
+}
+.ld-sbc-bg { position: absolute; left: 0; top: 0; right: 0; bottom: 0; background: var(--sbc-background-color); opacity: var(--sbc-background-opacity, 0.2); pointer-events: none; }
+.ld-sbc-fill { position: absolute; left: 0; top: 0; right: 0; bottom: 0; background: var(--sbc-fill-color); pointer-events: none; }
+.ld-sbc-switch-left .ld-sbc-fill { -webkit-clip-path: inset(0 100% 0 0); clip-path: inset(0 100% 0 0); }
+.ld-sbc-switch-bottom .ld-sbc-fill { -webkit-clip-path: inset(100% 0 0 0); clip-path: inset(100% 0 0 0); }
+.ld-sbc-switch-tap .ld-sbc-fill { -webkit-clip-path: circle(0 at var(--sbc-tap-x, 50%) var(--sbc-tap-y, 50%)); clip-path: circle(0 at var(--sbc-tap-x, 50%) var(--sbc-tap-y, 50%)); }
+.ld-sbc-switch-fade .ld-sbc-fill { opacity: 0; }
+.ld-sbc-switch.ld-sbc-filled .ld-sbc-fill { -webkit-clip-path: inset(0 0 0 0); clip-path: inset(0 0 0 0); opacity: 1; }
+.ld-sbc-switch-tap.ld-sbc-filled .ld-sbc-fill { -webkit-clip-path: circle(150% at var(--sbc-tap-x, 50%) var(--sbc-tap-y, 50%)); clip-path: circle(150% at var(--sbc-tap-x, 50%) var(--sbc-tap-y, 50%)); }
+.ld-sbc-switch.ld-sbc-ready .ld-sbc-fill { transition: clip-path var(--sbc-switch-duration, 400ms) ease-in-out, -webkit-clip-path var(--sbc-switch-duration, 400ms) ease-in-out, opacity var(--sbc-switch-duration, 400ms) ease-in-out; }
+.ld-sbc-switch.ld-sbc-ready .ld-sbc-icon, .ld-sbc-switch.ld-sbc-ready span { transition: color var(--sbc-switch-duration, 400ms) ease-in-out, transform 180ms ease-in-out; }
+.ld-sbc-switch.ld-sbc-filled span, .ld-sbc-switch.ld-sbc-filled .ld-sbc-state { color: var(--sbc-switch-text-color, #fff); }
+.ld-sbc-icon, .ld-sbc-seg span { position: relative; }
+.ld-sbc-icon {
+  width: 40%; max-height: 80%; min-height: 0; color: var(--state-color); pointer-events: none;
+  display: flex; align-items: center; justify-content: center; transition: transform 180ms ease-in-out;
+}
+.ld-sbc-icon .ld-icon { width: 100%; height: 100%; max-height: 100%; }
+.ld-sbc-icon.ld-sbc-has-picture { width: auto; max-width: 90%; }
+.ld-sbc-picture { position: relative; display: block; max-width: 100%; max-height: 100%; object-fit: contain; }
+.ld-sbc-seg.ld-pressed { opacity: 1; }
+.ld-sbc-seg.ld-pressed .ld-sbc-icon { transform: scale(1.2); }
+.ld-sbc-icon + span { margin-top: 8px; }
+.ld-sbc-seg span {
+  flex-shrink: 0; max-width: 100%;
   display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
   -webkit-hyphens: auto; hyphens: auto; overflow-wrap: break-word; word-wrap: break-word;
 }
-.ld-split-icon + .ld-split-name, .ld-split-icon + .ld-split-state { margin-top: 8px; }
-.ld-split-name { font-size: var(--sbc-name-font-size, inherit); font-weight: var(--sbc-name-font-weight, inherit); }
-.ld-split-state { -webkit-line-clamp: 1; font-size: var(--sbc-state-font-size, 0.9rem); font-weight: var(--sbc-state-font-weight, inherit); color: var(--secondary-text-color); }
+.ld-sbc-name { font-size: var(--sbc-name-font-size, inherit); font-weight: var(--sbc-name-font-weight, inherit); }
+.ld-sbc-seg .ld-sbc-state { -webkit-line-clamp: 1; font-size: var(--sbc-state-font-size, 0.9rem); font-weight: var(--sbc-state-font-weight, inherit); color: var(--secondary-text-color); }
+/* mini toggle (ha-control-switch look); the whole segment is the switch */
+.ld-sbc-toggle {
+  position: relative; flex-shrink: 0; display: flex; width: var(--sbc-toggle-width, 64px); max-width: 70%;
+  height: var(--sbc-toggle-height, 26px); margin-top: 8px; padding: 3px; border-radius: var(--sbc-toggle-radius, 9px);
+}
+.ld-sbc-track { position: absolute; left: 0; top: 0; right: 0; bottom: 0; border-radius: inherit; background-color: var(--sbc-toggle-off-color); opacity: 0.2; transition: background-color 180ms ease-in-out; }
+.ld-sbc-thumb {
+  position: relative; display: flex; align-items: center; justify-content: center; width: 50%; height: 100%;
+  border-radius: calc(var(--sbc-toggle-radius, 9px) - 3px); background-color: var(--sbc-toggle-off-color); color: #fff;
+  transition: transform 180ms ease-in-out, background-color 180ms ease-in-out;
+}
+.ld-sbc-thumb .ld-icon { width: 14px; height: 14px; max-width: 100%; flex-shrink: 1; }
+.ld-sbc-toggle.ld-sbc-on .ld-sbc-track { background-color: var(--sbc-toggle-on-color); }
+.ld-sbc-toggle.ld-sbc-on .ld-sbc-thumb { transform: translateX(100%); background-color: var(--sbc-toggle-on-color); }
+.ld-sbc-anim-bounce .ld-sbc-icon { animation: sbc-bounce 2s ease-in-out infinite; }
+.ld-sbc-anim-pulse .ld-sbc-icon { animation: sbc-pulse 1.5s ease-in-out infinite; }
+.ld-sbc-anim-shake .ld-sbc-icon { animation: sbc-shake 1.2s ease-in-out infinite; }
+.ld-sbc-anim-blink > :not(.ld-sbc-bg) { animation: sbc-blink 1.5s ease-in-out infinite; }
+@keyframes sbc-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15%); } }
+@keyframes sbc-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+@keyframes sbc-shake { 0%, 50%, 100% { transform: rotate(0); } 10%, 30% { transform: rotate(-12deg); } 20%, 40% { transform: rotate(12deg); } }
+@keyframes sbc-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+@media (prefers-reduced-motion: reduce) {
+  .ld-sbc-seg .ld-sbc-icon, .ld-sbc-seg > * { animation: none !important; transition: none !important; }
+}
+/* dividers on the right/bottom edge of every segment; the outermost are clipped */
+.ld-sbc-divider { display: var(--sbc-divider-display, none); position: absolute; background: var(--sbc-divider-color); pointer-events: none; }
+.ld-sbc-right { top: var(--sbc-divider-inset, 0); bottom: var(--sbc-divider-inset, 0); right: 0; width: var(--sbc-divider-width); }
+.ld-sbc-bottom { left: var(--sbc-divider-inset, 0); right: var(--sbc-divider-inset, 0); bottom: 0; height: var(--sbc-divider-width); }
 .ld-bcard { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 4% 8px; min-height: 80px; text-align: center; height: 100%; }
 .ld-bcard-icon { width: 40%; max-width: 64px; color: var(--state-icon-color); }
 .ld-bcard-icon .ld-icon { width: 100%; height: auto; }

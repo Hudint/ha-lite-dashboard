@@ -52,7 +52,13 @@ Login uses the regular HA login. A restricted user (e.g. a dedicated `wallpanel`
 - **Option A (fastest):** If the Shelly firmware or a kiosk app (e.g. [ShellyElevate](https://github.com/RapierXbox/ShellyElevate)) accepts an arbitrary URL, enter `http://<ha-address>:8123/lite-dashboard/<url-path>` there.
 - **Option B (always works):** In HA, go to *Settings → Dashboards → Add dashboard → Webpage*, use the URL `/lite-dashboard/<url-path>` and make it the default dashboard for the panel's user. The lite page reuses HA's login, so no second login is needed. HA loads its frontend once in the background at startup; after that, all interaction goes through the lite page.
 
-URL parameters: `?kiosk` hides the view tabs, `?lang=en` forces a language.
+### Options
+
+*Settings → Devices & services → Lite Dashboard → Configure* (per dashboard):
+
+- **Disable scrolling** (`overflow: hidden`): content that does not fit on the screen is cut off instead of scrollable. Takes effect the next time the page loads.
+
+URL parameters: `?kiosk` hides the view tabs, `?lang=en` forces a language, `?no_scroll` disables scrolling for this page load.
 
 ## Supported cards
 
@@ -60,7 +66,7 @@ URL parameters: `?kiosk` hides the view tabs, `?lang=en` forces a language.
 
 **HA cards:** `tile` (including the features `toggle`, `target-temperature`, `light-brightness`, `cover-open-close`, `cover-position`, `fan-speed`, `climate-hvac-modes`, `climate-preset-modes`), `heading` (with badges), `button`, `entities`, `glance`, `entity`/`sensor` (without graph), `thermostat`, `weather-forecast`, `markdown` (with templates), `grid`, `vertical-stack`, `horizontal-stack`, `conditional`, `picture`, `picture-entity`, `picture-glance`, `iframe`.
 
-**Custom cards, re-implemented (the original JS is never loaded):** `actions-card`, `restriction-card` (PIN/confirm/block, same logic as the original), `bignumber-card`, `split-button-card`, `button-card` (core features incl. `[[[ JS templates ]]]`), Mushroom entity/light/climate/cover/… cards, `mushroom-template-card`, `mushroom-title-card`, `mushroom-chips-card`, `stack-in-card`, `layout-card` (simplified).
+**Custom cards, re-implemented (the original JS is never loaded):** `actions-card`, `restriction-card` (PIN/confirm/block, same logic as the original), `bignumber-card`, [`split-button-card`](https://github.com/Hudint/split-button-card) (all options of v0.6.0: dividers, columns/span/row_span, switch style, mini toggle, icon_on/icon_off, animations, templates, per-button visibility incl. time/screen/location), `button-card` (core features incl. `[[[ JS templates ]]]`), Mushroom entity/light/climate/cover/… cards, `mushroom-template-card`, `mushroom-title-card`, `mushroom-chips-card`, `stack-in-card`, `layout-card` (simplified).
 
 **Actions:** `toggle`, `more-info` (its own compact dialog for lights, climate, covers, locks, scripts, weather and generic entities), `perform-action`/`call-service`, `navigate`, `url`, confirmation dialogs, `tap`/`hold`/`double_tap`/`icon_tap`.
 

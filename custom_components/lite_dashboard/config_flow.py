@@ -10,7 +10,13 @@ except ImportError:  # HA releases before the probatio switch
     import voluptuous as vol
 
 from homeassistant.components.lovelace.const import LOVELACE_DATA
-from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
+from homeassistant.config_entries import (
+    ConfigEntry,
+    ConfigFlow,
+    ConfigFlowResult,
+    OptionsFlow,
+)
+from homeassistant.core import callback
 from homeassistant.helpers.selector import (
     SelectOptionDict,
     SelectSelector,
@@ -18,7 +24,7 @@ from homeassistant.helpers.selector import (
     SelectSelectorMode,
 )
 
-from .const import CONF_DASHBOARD, DEFAULT_DASHBOARD, DOMAIN, PAGE_URL
+from .const import CONF_DASHBOARD, CONF_NO_SCROLL, DEFAULT_DASHBOARD, DOMAIN, PAGE_URL
 
 
 def _available_dashboards(hass) -> dict[str, str]:
@@ -37,6 +43,12 @@ class LiteDashboardConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Lite Dashboard."""
 
     VERSION = 1
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry: ConfigEntry) -> LiteDashboardOptionsFlow:
+        """Per-dashboard display options."""
+        return LiteDashboardOptionsFlow()
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
@@ -73,6 +85,28 @@ class LiteDashboardConfigFlow(ConfigFlow, domain=DOMAIN):
                             options=options, mode=SelectSelectorMode.DROPDOWN
                         )
                     )
+                }
+            ),
+        )
+
+
+class LiteDashboardOptionsFlow(OptionsFlow):
+    """Display options; read by the page on every load, so no reload is needed."""
+
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Show the options form."""
+        if user_input is not None:
+            return self.async_create_entry(data=user_input)
+        return self.async_show_form(
+            step_id="init",
+            data_schema=vol.Schema(
+                {
+                    vol.Optional(
+                        CONF_NO_SCROLL,
+                        default=self.config_entry.options.get(CONF_NO_SCROLL, False),
+                    ): bool,
                 }
             ),
         )

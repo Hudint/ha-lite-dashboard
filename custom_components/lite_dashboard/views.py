@@ -10,7 +10,7 @@ from aiohttp import web
 from homeassistant.components.http import HomeAssistantView
 from homeassistant.core import HomeAssistant
 
-from .const import CONF_DASHBOARD, DEFAULT_DASHBOARD, DOMAIN, ICONS_URL, PAGE_URL, STATIC_URL
+from .const import CONF_DASHBOARD, CONF_NO_SCROLL, DEFAULT_DASHBOARD, DOMAIN, ICONS_URL, PAGE_URL, STATIC_URL
 from .icons import IconResolver
 
 PAGE_TEMPLATE = """<!doctype html>
@@ -67,6 +67,7 @@ class LitePageView(HomeAssistantView):
             "title": entry.title,
             "iconsUrl": ICONS_URL,
             "version": self._version,
+            "noScroll": bool(entry.options.get(CONF_NO_SCROLL, False)),
         }
         body = PAGE_TEMPLATE.format(
             lang=html.escape(hass.config.language or "en"),

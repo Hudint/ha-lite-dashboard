@@ -632,7 +632,7 @@
     var vis = card.config.visibility;
     if (vis) {
       var apply = function () { wrap.style.display = LD.checkConditions(ctx, vis) ? '' : 'none'; };
-      ctx.watchIds(LD.conditionEntities(vis), apply, LD.conditionsUseScreen(vis));
+      ctx.watchIds(LD.conditionEntities(vis), apply, LD.conditionsUseScreen(vis) || LD.conditionsUseTime(vis));
       apply();
     }
     if (card.naturalRows) wrap.style.setProperty('--ld-rows', card.naturalRows);

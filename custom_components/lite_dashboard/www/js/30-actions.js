@@ -206,7 +206,19 @@
         return !!c.media_query && window.matchMedia(c.media_query).matches;
       case 'user':
         return !!(c.users && ctx.hass.user && c.users.indexOf(ctx.hass.user.id) !== -1);
-      case 'location':
+      case 'location': {
+        /* the person entity linked to the current user must be in one of the locations */
+        var uid = ctx.hass.user && ctx.hass.user.id;
+        var states = ctx.hass.store.states;
+        var person = null;
+        Object.keys(states).forEach(function (eid) {
+          if (eid.indexOf('person.') === 0 && states[eid].attributes.user_id === uid) person = states[eid];
+        });
+        return !!person && LD.asArray(c.locations || []).indexOf(person.state) !== -1;
+      }
+      case 'time':
+        return checkTime(c);
+      case 'view_columns':
         return true;
       case 'and':
         return !c.conditions || LD.checkConditions(ctx, c.conditions, fallback);
@@ -216,6 +228,22 @@
         return !c.conditions || !LD.checkConditions(ctx, c.conditions, fallback);
     }
     return true;
+  }
+
+  /* time condition, evaluated in the browser's local time (like split-button-card) */
+  var WEEKDAYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+  function toSeconds(t) {
+    var p = String(t).split(':').map(Number);
+    return (p[0] || 0) * 3600 + (p[1] || 0) * 60 + (p[2] || 0);
+  }
+  function checkTime(c) {
+    var now = new Date();
+    if (c.weekdays && LD.asArray(c.weekdays).indexOf(WEEKDAYS[now.getDay()]) === -1) return false;
+    var cur = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+    var after = c.after ? toSeconds(c.after) : undefined;
+    var before = c.before ? toSeconds(c.before) : undefined;
+    if (after !== undefined && before !== undefined && after > before) return cur >= after || cur < before;
+    return (after === undefined || cur >= after) && (before === undefined || cur < before);
   }
 
   LD.checkConditions = function (ctx, conditions, fallbackEntity) {
@@ -233,6 +261,11 @@
       if (c.conditions) LD.conditionEntities(c.conditions, out);
     });
     return out;
+  };
+  LD.conditionsUseTime = function (conditions) {
+    return LD.asArray(conditions).some(function (c) {
+      return c.condition === 'time' || (c.conditions && LD.conditionsUseTime(c.conditions));
+    });
   };
   LD.conditionsUseScreen = function (conditions) {
     return LD.asArray(conditions).some(function (c) {

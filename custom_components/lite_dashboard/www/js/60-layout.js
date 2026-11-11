@@ -13,17 +13,26 @@
   /* Place a card in a sections grid slot with HA's sizing rules. */
   function mountGridCard(container, card, ctx, gridColumns) {
     var slot = h('div', 'ld-slot');
-    var size = LD.cardGrid(card);
-    if (size.columns === 'full') slot.classList.add('ld-full');
-    else slot.style.gridColumn = 'span ' + Math.min(typeof size.columns === 'number' ? size.columns : 12, gridColumns);
-    if (typeof size.rows === 'number') {
-      var rowH = cssPx('--ha-section-grid-row-height', 56);
-      var gap = cssPx('--ha-section-grid-row-gap', 8);
-      slot.classList.add('ld-fit-rows');
-      slot.style.gridRow = 'span ' + size.rows;
-      slot.style.height = size.rows * (rowH + gap) - gap + 'px';
-      if (size.rows < 5) card.el.classList.add('ld-rows-small');
+    /* cards whose size depends on their state (e.g. split-button-card) call relayout() */
+    function applySize() {
+      var size = LD.cardGrid(card);
+      slot.classList.toggle('ld-full', size.columns === 'full');
+      slot.style.gridColumn = size.columns === 'full' ? '' : 'span ' + Math.min(typeof size.columns === 'number' ? size.columns : 12, gridColumns);
+      var fit = typeof size.rows === 'number';
+      slot.classList.toggle('ld-fit-rows', fit);
+      if (fit) {
+        var rowH = cssPx('--ha-section-grid-row-height', 56);
+        var gap = cssPx('--ha-section-grid-row-gap', 8);
+        slot.style.gridRow = 'span ' + size.rows;
+        slot.style.height = size.rows * (rowH + gap) - gap + 'px';
+      } else {
+        slot.style.gridRow = '';
+        slot.style.height = '';
+      }
+      card.el.classList.toggle('ld-rows-small', fit && size.rows < 5);
     }
+    applySize();
+    card.relayout = applySize;
     slot.appendChild(card.el);
     container.appendChild(slot);
 
@@ -38,7 +47,7 @@
         condShown = LD.checkConditions(ctx, vis);
         apply();
       };
-      ctx.watchIds(LD.conditionEntities(vis), check, LD.conditionsUseScreen(vis));
+      ctx.watchIds(LD.conditionEntities(vis), check, LD.conditionsUseScreen(vis) || LD.conditionsUseTime(vis));
       check();
     }
     card.onVisibility = function (shown) {
@@ -63,7 +72,7 @@
     });
     if (section.visibility) {
       var apply = function () { el.style.display = LD.checkConditions(ctx, section.visibility) ? '' : 'none'; };
-      ctx.watchIds(LD.conditionEntities(section.visibility), apply, LD.conditionsUseScreen(section.visibility));
+      ctx.watchIds(LD.conditionEntities(section.visibility), apply, LD.conditionsUseScreen(section.visibility) || LD.conditionsUseTime(section.visibility));
       apply();
     }
     return el;

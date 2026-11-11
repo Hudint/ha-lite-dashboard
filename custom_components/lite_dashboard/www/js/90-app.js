@@ -70,7 +70,7 @@
         var deps = card.deps.filter(Boolean);
         if (card.watchAllTemplates || JSON.stringify(card.config).indexOf('[[[') !== -1) deps = deps.concat(extractEntityIds(card.config));
         deps.forEach(function (id) { addWatcher(id, card.update); });
-        if (card.watchScreen) screenFns.push(card.update);
+        if (card.watchScreen || card.watchTime) screenFns.push(card.update);
         cards.push(card);
       },
       watchIds: function (ids, fn, screen) {
@@ -232,7 +232,13 @@
     return state.conn.call(msg).then(function (cfg) {
       if (cfg && cfg.strategy) throw new Error('This dashboard is auto-generated (strategy). Take control of it in Home Assistant to use the Lite view.');
       state.lovelace = cfg || { views: [] };
-      return extractEntityIds(state.lovelace);
+      var ids = extractEntityIds(state.lovelace);
+      if (!/"condition":\s*"location"/.test(JSON.stringify(state.lovelace))) return ids;
+      /* "location" conditions look up the person entity of the current user */
+      return state.conn.call({ type: 'get_states' }).then(function (all) {
+        all.forEach(function (st) { if (st.entity_id.indexOf('person.') === 0 && ids.indexOf(st.entity_id) === -1) ids.push(st.entity_id); });
+        return ids;
+      });
     });
   }
 
@@ -314,12 +320,17 @@
     else if (mq.addListener) mq.addListener(onScheme);
   }
 
+  /* "time" visibility conditions: re-evaluate twice a minute (same as split-button-card) */
+  setInterval(function () { if (state.ctx) state.ctx.onScreen(); }, 30000);
+
   document.addEventListener('visibilitychange', function () {
     if (document.visibilityState === 'visible' && state.conn) state.conn.reconnectNow();
   });
 
   /* touch devices: no text selection, no callout, no double-tap zoom */
   document.documentElement.classList.add('ld-root');
+  /* per-dashboard option (integration options) or ?no_scroll: content is clipped, no scrolling */
+  if (boot.noScroll || params.has('no_scroll')) document.documentElement.classList.add('ld-no-scroll');
   if (boot.title) document.title = boot.title;
   start();
 })();

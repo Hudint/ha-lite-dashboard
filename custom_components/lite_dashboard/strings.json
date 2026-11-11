@@ -4,7 +4,9 @@
       "user": {
         "title": "Lite Dashboard",
         "description": "Choose a dashboard. It will be served as a lightweight page for slow wall panels.",
-        "data": { "dashboard": "Dashboard" }
+        "data": {
+          "dashboard": "Dashboard"
+        }
       }
     },
     "abort": {
@@ -13,6 +15,20 @@
     },
     "create_entry": {
       "default": "Done. Open the lite page at http://<your-ha-address>{url}"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Lite Dashboard options",
+        "description": "Display options for this lite page.",
+        "data": {
+          "no_scroll": "Disable scrolling (overflow: hidden)"
+        },
+        "data_description": {
+          "no_scroll": "Content that does not fit on the screen is cut off instead of scrollable. Useful for wall panels."
+        }
+      }
     }
   }
 }

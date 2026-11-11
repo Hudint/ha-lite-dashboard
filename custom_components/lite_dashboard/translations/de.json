@@ -4,7 +4,9 @@
       "user": {
         "title": "Lite Dashboard",
         "description": "Wähle ein Dashboard. Es wird als schlanke Seite für langsame Wanddisplays bereitgestellt.",
-        "data": { "dashboard": "Dashboard" }
+        "data": {
+          "dashboard": "Dashboard"
+        }
       }
     },
     "abort": {
@@ -13,6 +15,20 @@
     },
     "create_entry": {
       "default": "Fertig. Die Lite-Seite ist erreichbar unter http://<deine-ha-adresse>{url}"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Lite-Dashboard-Optionen",
+        "description": "Anzeigeoptionen für diese Lite-Seite.",
+        "data": {
+          "no_scroll": "Scrollen deaktivieren (overflow: hidden)"
+        },
+        "data_description": {
+          "no_scroll": "Inhalt, der nicht auf den Bildschirm passt, wird abgeschnitten statt scrollbar. Praktisch für Wanddisplays."
+        }
+      }
     }
   }
 }
