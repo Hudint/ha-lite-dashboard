@@ -199,6 +199,7 @@
       day: 'd',
       login_failed: 'Login failed',
       no_forecast: 'No forecast',
+      back: 'Back',
     },
     de: {
       unavailable: 'Nicht verfügbar',
@@ -241,6 +242,7 @@
       day: 'T.',
       login_failed: 'Anmeldung fehlgeschlagen',
       no_forecast: 'Keine Vorhersage',
+      back: 'Zurück',
     },
   };
   LD.lang = 'en';

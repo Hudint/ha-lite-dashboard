@@ -120,7 +120,7 @@
 
   /* ------------------------------------------------------------ layout math */
 
-  /* Rows the grid needs, following CSS grid auto-placement (no "dense"). */
+  /* Rows the grid needs for these button configs, following CSS grid auto-placement (no "dense"). */
   function countRows(shown, columns) {
     var occupied = [];
     function free(row, col, span, rowSpan) {
@@ -133,8 +133,8 @@
     var col = 0;
     var rows = 0;
     shown.forEach(function (s) {
-      var span = Math.min(s.b.span || 1, columns);
-      var rowSpan = s.b.row_span || 1;
+      var span = Math.min(s.span || 1, columns);
+      var rowSpan = s.row_span || 1;
       while (col + span > columns || !free(row, col, span, rowSpan)) {
         col++;
         if (col + span > columns) {
@@ -154,7 +154,9 @@
 
   /* --------------------------------------------------------------- segment */
 
-  function buildSegment(b, ctx) {
+  /* onAction(action, element) gets every action first; it returns true when it
+   * handled it (open a menu, go back), otherwise the action runs normally. */
+  function buildSegment(b, ctx, onAction) {
     var hass = ctx.hass;
     var id = b.entity;
     var item = h('div', 'ld-sbc-item');
@@ -199,8 +201,19 @@
       seg.style.setProperty('--sbc-tap-x', ev.clientX - r.left + 'px');
       seg.style.setProperty('--sbc-tap-y', ev.clientY - r.top + 'px');
     });
-    var clickable = LD.bindActions(seg, ctx, b, id, {});
-    if (!clickable) seg.classList.add('ld-sbc-static');
+    function handler(key) {
+      var act = b[key];
+      if (!act || act.action === 'none') return null;
+      return function () {
+        if (onAction && onAction(act, item)) return;
+        LD.runAction(ctx, act, id);
+        if (onAction) onAction({ action: '__sbc_done' }, item);
+      };
+    }
+    var handlers = { tap: handler('tap_action'), hold: handler('hold_action'), doubleTap: handler('double_tap_action') };
+    LD.bindGestures(seg, handlers);
+    if (handlers.tap || handlers.hold || handlers.doubleTap) seg.classList.add('ld-clickable');
+    else seg.classList.add('ld-sbc-static');
 
     var lastFill = null;
     var shownIcon = null;
@@ -272,26 +285,27 @@
 
   /* ------------------------------------------------------------------ card */
 
-  LD.cardTypes['custom:split-button-card'] = function (config, ctx) {
-    var divider = config.divider || 'border';
-    var gap = config.gap || '8px';
-    var el = h('div', 'ld-card ld-sbc ld-sbc-divider-' + divider);
-    var grid = h('div', 'ld-sbc-grid');
-    el.appendChild(grid);
+  var MENU_ACTION = '__sbc_menu';
+  var BACK_ACTION = '__sbc_back';
+  var DONE_ACTION = '__sbc_done';
+  var MENU_BACKS = { left: 1, right: 1, top: 1, bottom: 1, top_left: 1, top_right: 1, bottom_left: 1, bottom_right: 1, start: 1, end: 1, none: 1 };
+  var DEFAULT_MENU_TIMEOUT = 15;
 
-    if (divider === 'border' || divider === 'line') {
-      el.style.setProperty('--sbc-divider-display', 'block');
-      el.style.setProperty('--sbc-divider-width', config.divider_width || (divider === 'border' ? CARD_BORDER_WIDTH : '1px'));
-      el.style.setProperty('--sbc-divider-color', config.divider_color || (divider === 'border' ? CARD_BORDER_COLOR : 'var(--divider-color, #e0e0e0)'));
-      el.style.setProperty('--sbc-divider-inset', divider === 'line' ? '20%' : '0px');
-    } else if (divider === 'gap') {
-      el.style.setProperty('--sbc-gap', gap);
-      el.style.setProperty('--sbc-segment-border', (config.divider_width || CARD_BORDER_WIDTH) + ' solid ' + (config.divider_color || CARD_BORDER_COLOR));
-      el.style.setProperty('--sbc-segment-radius', 'max(0px, calc(var(--ha-card-border-radius, 12px) - ' + gap + '))');
-    }
+  function backMode(config) {
+    if (config.menu_back === false) return 'none';
+    if (config.menu_back === true || !config.menu_back || !MENU_BACKS[config.menu_back]) return 'left';
+    return config.menu_back;
+  }
 
-    /* card-level options are defaults for every button */
-    var segs = (config.buttons || []).map(function (raw) {
+  function reducedMotion() {
+    return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  }
+
+  /* Card-level options are defaults for every button, menus included. The
+   * gesture that opens a menu replaces that gesture's action. */
+  function normalizeButtons(buttons, config) {
+    return (buttons || []).map(function (raw) {
+      raw = raw || {};
       var b = {
         show_icon: LD.def(config.show_icon, true),
         show_name: LD.def(config.show_name, true),
@@ -311,55 +325,303 @@
         switch_style: LD.def(config.switch_style, false),
         switch_animation: config.switch_animation,
         switch_text_color: config.switch_text_color,
-        tap_action: raw && raw.entity ? { action: DOMAINS_TOGGLE[domainOf(raw.entity)] ? 'toggle' : 'more-info' } : { action: 'none' },
+        tap_action: raw.entity ? { action: DOMAINS_TOGGLE[domainOf(raw.entity)] ? 'toggle' : 'more-info' } : { action: 'none' },
         hold_action: { action: 'more-info' },
         double_tap_action: { action: 'none' },
       };
-      Object.keys(raw || {}).forEach(function (k) { b[k] = raw[k]; });
-      return buildSegment(b, ctx);
+      Object.keys(raw).forEach(function (k) { b[k] = raw[k]; });
+      if (raw.buttons && raw.buttons.length) {
+        b.buttons = normalizeButtons(raw.buttons, config);
+        b[(raw.menu_open || 'tap') + '_action'] = { action: MENU_ACTION };
+      } else delete b.buttons;
+      return b;
+    });
+  }
+
+  function allSegments(list) {
+    var out = [];
+    list.forEach(function (b) {
+      out.push(b);
+      if (b.buttons) out = out.concat(allSegments(b.buttons));
+    });
+    return out;
+  }
+
+  function animate(el, frames, timing) {
+    if (!el.animate || reducedMotion()) return;
+    try {
+      el.animate(frames, timing);
+    } catch (e) {
+      /* old WebView without some keyframe property: skip the animation */
+    }
+  }
+
+  /* Escape goes one menu level back; one global listener, cards of old renders drop out */
+  var escHandlers = [];
+  document.addEventListener('keydown', function (ev) {
+    if (ev.key !== 'Escape') return;
+    escHandlers = escHandlers.filter(function (fn) { return fn(); });
+  });
+
+  LD.cardTypes['custom:split-button-card'] = function (config, ctx) {
+    var divider = config.divider || 'border';
+    var gap = config.gap || '8px';
+    var el = h('div', 'ld-card ld-sbc ld-sbc-divider-' + divider);
+    var body = h('div', 'ld-sbc-body');
+    var grid = h('div', 'ld-sbc-grid');
+    body.appendChild(grid);
+    el.appendChild(body);
+
+    if (divider === 'border' || divider === 'line') {
+      el.style.setProperty('--sbc-divider-display', 'block');
+      el.style.setProperty('--sbc-divider-width', config.divider_width || (divider === 'border' ? CARD_BORDER_WIDTH : '1px'));
+      el.style.setProperty('--sbc-divider-color', config.divider_color || (divider === 'border' ? CARD_BORDER_COLOR : 'var(--divider-color, #e0e0e0)'));
+      el.style.setProperty('--sbc-divider-inset', divider === 'line' ? '20%' : '0px');
+    } else if (divider === 'gap') {
+      el.style.setProperty('--sbc-gap', gap);
+      el.style.setProperty('--sbc-segment-border', (config.divider_width || CARD_BORDER_WIDTH) + ' solid ' + (config.divider_color || CARD_BORDER_COLOR));
+      el.style.setProperty('--sbc-segment-radius', 'max(0px, calc(var(--ha-card-border-radius, 12px) - ' + gap + '))');
+    }
+    if (config.menu_back_size) el.style.setProperty('--sbc-back-size', config.menu_back_size);
+    if (config.menu_back_color) el.style.setProperty('--sbc-back-color', cssColor(config.menu_back_color));
+
+    var segments = normalizeButtons(config.buttons, config);
+    var mode = backMode(config);
+    /* back button as a regular button (menu_back: start / end) */
+    var backSegment = null;
+    if (mode === 'start' || mode === 'end') {
+      backSegment = normalizeButtons([{}], config)[0];
+      backSegment.icon = config.menu_back_icon || 'mdi:arrow-left';
+      backSegment.name = config.menu_back_name || LD.t('back');
+      backSegment.color = config.menu_back_color;
+      backSegment.show_state = false;
+      backSegment.show_toggle = false;
+      backSegment.switch_style = false;
+      backSegment.state_background = false;
+      backSegment.animation = undefined;
+      backSegment.span = 1;
+      backSegment.row_span = 1;
+      backSegment.tap_action = { action: BACK_ACTION };
+      backSegment.__back = true;
+    }
+
+    var path = []; /* indices of the opened menu buttons, one per level (this browser only) */
+    var menuTimer = null;
+    var built = null; /* {key, items: [{b, item, update}]} of the rendered level */
+    var lastRows = null;
+    var lastHidden = null;
+
+    function levelOf(p) {
+      var list = segments;
+      for (var i = 0; i < p.length; i++) {
+        var next = list[p[i]] && list[p[i]].buttons;
+        if (!next || !next.length) return null;
+        list = next;
+      }
+      return list;
+    }
+    function menuParent() {
+      var list = segments;
+      var parent = null;
+      path.forEach(function (i) {
+        parent = list[i];
+        list = (parent && parent.buttons) || [];
+      });
+      return parent;
+    }
+    function visibleIn(list) {
+      return list.filter(function (b) {
+        return !b.visibility || !b.visibility.length || LD.checkConditions(ctx, b.visibility, b.entity);
+      });
+    }
+    function withBack(items) {
+      if (!backSegment) return items;
+      return mode === 'start' ? [backSegment].concat(items) : items.concat([backSegment]);
+    }
+    function gridItems(shown) {
+      return path.length ? withBack(shown) : shown;
+    }
+    function columnsFor(items) {
+      var configured = path.length ? (menuParent() || {}).menu_columns : config.columns;
+      return configured || Math.max(items.length, 1);
+    }
+    /* Unless the card resizes with its menus, it keeps the size of its largest level. */
+    function rowsFor(items, columns) {
+      var rows = countRows(items, columns);
+      if (config.menu_resize) return rows;
+      allSegments(segments).forEach(function (m) {
+        if (!m.buttons || !m.buttons.length) return;
+        var segs = withBack(m.buttons);
+        rows = Math.max(rows, countRows(segs, m.menu_columns || segs.length));
+      });
+      return rows;
+    }
+
+    function restartMenuTimer() {
+      clearTimeout(menuTimer);
+      var timeout = config.menu_timeout !== undefined ? config.menu_timeout : DEFAULT_MENU_TIMEOUT;
+      if (!timeout || !path.length) return;
+      menuTimer = setTimeout(function () { navigate([]); }, timeout * 1000);
+    }
+
+    function navigate(newPath, animateFn) {
+      clearTimeout(menuTimer);
+      if (newPath.join('/') === path.join('/')) return;
+      path = newPath;
+      restartMenuTimer();
+      render();
+      if (animateFn) animateFn();
+      else animate(body, [{ opacity: 0, transform: 'scale(0.96)' }, { opacity: 1, transform: 'none' }], { duration: 220, easing: 'ease-out' });
+    }
+
+    function back() {
+      navigate(path.slice(0, -1));
+    }
+
+    function openMenu(b, origin) {
+      var level = levelOf(path) || segments;
+      var index = level.indexOf(b);
+      if (index < 0) return;
+      var before = body.getBoundingClientRect();
+      var from = origin.getBoundingClientRect();
+      navigate(path.concat([index]), function () {
+        /* the menu splits out of the tapped button */
+        var now = body.getBoundingClientRect();
+        var sx = now.width / before.width;
+        var sy = now.height / before.height;
+        var inset = [(from.top - before.top) * sy, (before.right - from.right) * sx, (before.bottom - from.bottom) * sy, (from.left - before.left) * sx]
+          .map(function (v) { return Math.max(0, v) + 'px'; })
+          .join(' ');
+        var timing = { duration: 340, easing: 'cubic-bezier(0.2, 0, 0, 1)' };
+        animate(body, [{ clipPath: 'inset(' + inset + ')' }, { clipPath: 'inset(0px 0px 0px 0px)' }], timing);
+        var ox = (from.left + from.width / 2 - before.left) * sx + now.left;
+        var oy = (from.top + from.height / 2 - before.top) * sy + now.top;
+        var parts = body.querySelectorAll('.ld-sbc-item, .ld-sbc-back');
+        for (var i = 0; i < parts.length; i++) {
+          var r = parts[i].getBoundingClientRect();
+          var dx = (ox - (r.left + r.width / 2)) * 0.6;
+          var dy = (oy - (r.top + r.height / 2)) * 0.6;
+          animate(parts[i], [{ transform: 'translate(' + dx + 'px, ' + dy + 'px) scale(0.85)', opacity: 0 }, { transform: 'none', opacity: 1 }], timing);
+        }
+      });
+    }
+
+    /* every button action passes here first */
+    function onAction(action, origin) {
+      if (action.action === MENU_ACTION) {
+        var found = built && built.items.filter(function (x) { return x.item === origin; })[0];
+        if (found) openMenu(found.b, origin);
+        return true;
+      }
+      if (action.action === BACK_ACTION) {
+        back();
+        return true;
+      }
+      if (action.action === DONE_ACTION) {
+        /* a menu button ran its action: return to the start shortly after */
+        if (!path.length) return true;
+        var parent = menuParent();
+        var close = parent && parent.menu_close_on_action !== undefined ? parent.menu_close_on_action : LD.def(config.menu_close_on_action, true);
+        if (close) {
+          clearTimeout(menuTimer);
+          menuTimer = setTimeout(function () { navigate([]); }, 350);
+        }
+        return true;
+      }
+      return false;
+    }
+
+    /* back strip or corner button, outside the grid */
+    var backEl = h('div', 'ld-sbc-back');
+    var backIcon = LD.icon(null);
+    backEl.appendChild(backIcon);
+    LD.bindGestures(backEl, { tap: back });
+    backEl.classList.add('ld-clickable');
+
+    el.addEventListener('pointerdown', function () { if (path.length) restartMenuTimer(); }, true);
+    escHandlers.push(function () {
+      if (!el.isConnected) return false;
+      if (path.length) back();
+      return true;
     });
 
+    function render() {
+      var level = levelOf(path);
+      if (!level) {
+        path = [];
+        level = segments;
+      }
+      var shown = visibleIn(level);
+      var items = gridItems(shown);
+      var columns = columnsFor(items);
+      var key = path.join('/') + '|' + items.map(function (b) { return b.__back ? 'back' : level.indexOf(b); }).join(',') + '|' + columns;
+      if (!built || built.key !== key) {
+        /* new elements per level, so no state or transition carries over */
+        var reuse = built && built.path === path.join('/') ? built.items : [];
+        var nextItems = items.map(function (b) {
+          var old = reuse.filter(function (x) { return x.b === b; })[0];
+          return old || buildSegment(b, ctx, onAction);
+        });
+        LD.clear(grid);
+        nextItems.forEach(function (x) {
+          x.item.style.gridColumn = 'span ' + Math.min(x.b.span || 1, columns);
+          x.item.style.gridRow = 'span ' + (x.b.row_span || 1);
+          grid.appendChild(x.item);
+        });
+        grid.style.gridTemplateColumns = 'repeat(' + columns + ', minmax(0, 1fr))';
+        built = { key: key, path: path.join('/'), items: nextItems };
+
+        var m = path.length ? mode : 'none';
+        body.className = 'ld-sbc-body ld-sbc-has-back-' + m;
+        if (backEl.parentNode) backEl.parentNode.removeChild(backEl);
+        if (m !== 'none' && m !== 'start' && m !== 'end') {
+          var corner = m.indexOf('_') !== -1;
+          backEl.className = 'ld-sbc-back ld-clickable ld-sbc-back-' + m + (corner ? ' ld-sbc-corner' : ' ld-sbc-strip');
+          LD.setIcon(backIcon, config.menu_back_icon || (corner ? 'mdi:arrow-left' : 'mdi:chevron-left'));
+          if (m === 'left' || m === 'top') body.insertBefore(backEl, grid);
+          else body.appendChild(backEl);
+        }
+
+        /* same footprint as a native button (6 x 2) per row of segments */
+        var rows = rowsFor(items, columns);
+        if (rows !== lastRows) {
+          lastRows = rows;
+          card.grid = { columns: 6, rows: rows * 2, min_columns: 2, min_rows: rows };
+          if (card.relayout) card.relayout();
+        }
+      }
+      var hidden = shown.length === 0 && !path.length;
+      if (hidden !== lastHidden) {
+        lastHidden = hidden;
+        el.style.display = hidden ? 'none' : '';
+        if (card.onVisibility) card.onVisibility(!hidden);
+      }
+      built.items.forEach(function (x) { x.update(); });
+    }
+
+    var all = allSegments(segments);
     var deps = [];
     var usesTime = false;
-    segs.forEach(function (s) {
-      if (s.b.entity) deps.push(s.b.entity);
-      if (s.b.visibility) {
-        deps = deps.concat(LD.conditionEntities(s.b.visibility));
-        if (LD.conditionsUseTime(s.b.visibility)) usesTime = true;
+    var usesScreen = false;
+    all.forEach(function (b) {
+      if (b.entity) deps.push(b.entity);
+      if (b.visibility) {
+        deps = deps.concat(LD.conditionEntities(b.visibility));
+        if (LD.conditionsUseTime(b.visibility)) usesTime = true;
+        if (LD.conditionsUseScreen(b.visibility)) usesScreen = true;
       }
+      ['tap_action', 'hold_action', 'double_tap_action'].forEach(function (k) {
+        if (b[k] && b[k].entity) deps.push(b[k].entity);
+      });
     });
 
-    var lastLayout = '';
     var card = {
       el: el,
       deps: deps,
-      watchScreen: segs.some(function (s) { return s.b.visibility && LD.conditionsUseScreen(s.b.visibility); }),
+      watchScreen: usesScreen,
       watchTime: usesTime,
       grid: { columns: 6, rows: 2, min_columns: 2, min_rows: 1 },
-      update: function () {
-        var shown = segs.filter(function (s) {
-          return !s.b.visibility || !s.b.visibility.length || LD.checkConditions(ctx, s.b.visibility, s.b.entity);
-        });
-        var columns = config.columns || Math.max(shown.length, 1);
-        var layout = shown.map(function (s) { return segs.indexOf(s); }).join(',') + '|' + columns;
-        if (layout !== lastLayout) {
-          lastLayout = layout;
-          LD.clear(grid);
-          shown.forEach(function (s) {
-            s.item.style.gridColumn = 'span ' + Math.min(s.b.span || 1, columns);
-            s.item.style.gridRow = 'span ' + (s.b.row_span || 1);
-            grid.appendChild(s.item);
-          });
-          grid.style.gridTemplateColumns = 'repeat(' + columns + ', minmax(0, 1fr))';
-          /* same footprint as a native button (6 x 2) per row of segments */
-          var rows = countRows(shown, columns);
-          card.grid = { columns: 6, rows: rows * 2, min_columns: 2, min_rows: rows };
-          if (card.relayout) card.relayout();
-          el.style.display = shown.length ? '' : 'none';
-          if (card.onVisibility) card.onVisibility(shown.length > 0);
-        }
-        shown.forEach(function (s) { s.update(); });
-      },
+      update: render,
     };
     return card;
   };

@@ -62,11 +62,11 @@ URL parameters: `?kiosk` hides the view tabs, `?lang=en` forces a language, `?no
 
 ## Supported cards
 
-**Views:** `sections` (same column and grid logic as HA), `masonry`, `panel`, `sidebar`, badges, visibility conditions for sections and cards.
+**Views:** `sections` (same column and grid logic as HA, including the column limit by the sections' total `column_span`), `masonry`, `panel`, `sidebar`, badges, visibility conditions for sections and cards.
 
 **HA cards:** `tile` (including the features `toggle`, `target-temperature`, `light-brightness`, `cover-open-close`, `cover-position`, `fan-speed`, `climate-hvac-modes`, `climate-preset-modes`), `heading` (with badges), `button`, `entities`, `glance`, `entity`/`sensor` (without graph), `thermostat`, `weather-forecast`, `markdown` (with templates), `grid`, `vertical-stack`, `horizontal-stack`, `conditional`, `picture`, `picture-entity`, `picture-glance`, `iframe`.
 
-**Custom cards, re-implemented (the original JS is never loaded):** `actions-card`, `restriction-card` (PIN/confirm/block, same logic as the original), `bignumber-card`, [`split-button-card`](https://github.com/Hudint/split-button-card) (all options of v0.6.0: dividers, columns/span/row_span, switch style, mini toggle, icon_on/icon_off, animations, templates, per-button visibility incl. time/screen/location), `button-card` (core features incl. `[[[ JS templates ]]]`), Mushroom entity/light/climate/cover/… cards, `mushroom-template-card`, `mushroom-title-card`, `mushroom-chips-card`, `stack-in-card`, `layout-card` (simplified).
+**Custom cards, re-implemented (the original JS is never loaded):** `actions-card`, `restriction-card` (PIN/confirm/block, same logic as the original), `bignumber-card`, [`split-button-card`](https://github.com/Hudint/split-button-card) (all options of v0.7.0: menus with nested sub-buttons and every back-button style, dividers, columns/span/row_span, switch style, mini toggle, icon_on/icon_off, animations, templates, per-button visibility incl. time/screen/location), `button-card` (core features incl. `[[[ JS templates ]]]`), Mushroom entity/light/climate/cover/… cards, `mushroom-template-card`, `mushroom-title-card`, `mushroom-chips-card`, `stack-in-card`, `layout-card` (simplified).
 
 **Actions:** `toggle`, `more-info` (its own compact dialog for lights, climate, covers, locks, scripts, weather and generic entities), `perform-action`/`call-service`, `navigate`, `url`, confirmation dialogs, `tap`/`hold`/`double_tap`/`icon_tap`.
 

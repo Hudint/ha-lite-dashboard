@@ -427,7 +427,8 @@ html.ld-no-scroll, html.ld-no-scroll body { overflow: hidden; height: 100%; over
 .ld-bignumber-unit { font-size: 40%; margin-left: 4px; }
 /* ---------- split-button-card (port of Hudint/split-button-card v0.6.0 styles) ---------- */
 .ld-sbc { height: 100%; overflow: hidden; }
-.ld-sbc-grid { display: grid; grid-auto-rows: 1fr; height: 100%; }
+.ld-sbc-body { position: relative; display: flex; height: 100%; }
+.ld-sbc-grid { flex: 1; min-width: 0; display: grid; grid-auto-rows: 1fr; height: 100%; }
 /* grow the grid by one divider width so the outermost dividers fall outside the card */
 .ld-sbc-divider-border .ld-sbc-grid, .ld-sbc-divider-line .ld-sbc-grid {
   height: calc(100% + var(--sbc-divider-width));
@@ -502,6 +503,33 @@ html.ld-no-scroll, html.ld-no-scroll body { overflow: hidden; height: 100%; over
 @media (prefers-reduced-motion: reduce) {
   .ld-sbc-seg .ld-sbc-icon, .ld-sbc-seg > * { animation: none !important; transition: none !important; }
 }
+/* menus: back button of an open menu, a strip on one side or a corner button */
+.ld-sbc-has-back-top, .ld-sbc-has-back-bottom { flex-direction: column; }
+.ld-sbc-has-back-top .ld-sbc-grid, .ld-sbc-has-back-bottom .ld-sbc-grid { flex: 1 1 0; min-height: 0; }
+.ld-sbc-divider-border .ld-sbc-has-back-top .ld-sbc-grid, .ld-sbc-divider-line .ld-sbc-has-back-top .ld-sbc-grid { height: auto; }
+.ld-sbc-divider-border .ld-sbc-has-back-bottom .ld-sbc-grid, .ld-sbc-divider-line .ld-sbc-has-back-bottom .ld-sbc-grid { height: auto; margin-bottom: 0; }
+.ld-sbc-divider-border .ld-sbc-has-back-right .ld-sbc-grid, .ld-sbc-divider-line .ld-sbc-has-back-right .ld-sbc-grid { margin-right: 0; }
+.ld-sbc-back { position: relative; display: flex; align-items: center; justify-content: center; color: var(--sbc-back-color, var(--secondary-text-color)); overflow: hidden; }
+.ld-sbc-back .ld-icon { width: 24px; height: 24px; }
+.ld-sbc-strip { flex: 0 0 var(--sbc-back-size, 32px); }
+.ld-sbc-back-left::after, .ld-sbc-back-top::after { content: ""; display: var(--sbc-divider-display, none); position: absolute; background: var(--sbc-divider-color); }
+.ld-sbc-back-left::after { top: var(--sbc-divider-inset, 0); bottom: var(--sbc-divider-inset, 0); right: 0; width: var(--sbc-divider-width); }
+.ld-sbc-back-top::after { left: var(--sbc-divider-inset, 0); right: var(--sbc-divider-inset, 0); bottom: 0; height: var(--sbc-divider-width); }
+.ld-sbc-divider-gap .ld-sbc-strip { border: var(--sbc-segment-border); border-radius: var(--sbc-segment-radius); }
+.ld-sbc-divider-gap .ld-sbc-back-left { margin: var(--sbc-gap) 0 var(--sbc-gap) var(--sbc-gap); }
+.ld-sbc-divider-gap .ld-sbc-back-right { margin: var(--sbc-gap) var(--sbc-gap) var(--sbc-gap) 0; }
+.ld-sbc-divider-gap .ld-sbc-back-top { margin: var(--sbc-gap) var(--sbc-gap) 0; }
+.ld-sbc-divider-gap .ld-sbc-back-bottom { margin: 0 var(--sbc-gap) var(--sbc-gap); }
+.ld-sbc-corner {
+  position: absolute; z-index: 1; width: var(--sbc-back-size, 28px); height: var(--sbc-back-size, 28px); border-radius: 50%;
+  background: rgba(127, 127, 127, 0.18);
+  background: var(--sbc-back-background, color-mix(in srgb, var(--sbc-back-color, rgb(127, 127, 127)) 18%, transparent));
+}
+.ld-sbc-corner .ld-icon { width: calc(var(--sbc-back-size, 28px) * 0.6); height: calc(var(--sbc-back-size, 28px) * 0.6); }
+.ld-sbc-back-top_left { top: 6px; left: 6px; }
+.ld-sbc-back-top_right { top: 6px; right: 6px; }
+.ld-sbc-back-bottom_left { bottom: 6px; left: 6px; }
+.ld-sbc-back-bottom_right { bottom: 6px; right: 6px; }
 /* dividers on the right/bottom edge of every segment; the outermost are clipped */
 .ld-sbc-divider { display: var(--sbc-divider-display, none); position: absolute; background: var(--sbc-divider-color); pointer-events: none; }
 .ld-sbc-right { top: var(--sbc-divider-inset, 0); bottom: var(--sbc-divider-inset, 0); right: 0; width: var(--sbc-divider-width); }

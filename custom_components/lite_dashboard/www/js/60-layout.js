@@ -99,6 +99,9 @@
 
     if (type === 'sections') {
       var cols = sectionsColumnCount(width, view.max_columns);
+      /* like hui-sections-view: never more columns than the sections need */
+      var spanSum = (view.sections || []).reduce(function (sum, sec) { return sum + (sec.column_span || 1); }, 0);
+      if (spanSum) cols = Math.max(1, Math.min(cols, spanSum));
       root.style.setProperty('--ld-column-count', cols);
       var badges = buildBadges(view, ctx);
       if (badges) root.appendChild(h('div', 'ld-view-badges')).appendChild(badges);
